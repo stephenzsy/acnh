@@ -35,7 +35,7 @@ class Flower:
         def mate_inner(t1, t2, c, p, i):
             if i >= self.n:
                 return [(self.get_index(c), p)]
-            n1, n2 = t1[i], t2[i]
+            [n1, n2] = sorted([t1[i], t2[i]])
             r = []
             if n1 == 0:
                 if n2 == 0:
@@ -120,7 +120,7 @@ class Flower:
         clones_needed = {}
         for k, v in pool.items():
             if v < target_count:
-                clones[k] = target_count - v
+                clones_needed[k] = target_count - v
                 
         all_color_indicies = list(pool.keys())
         new_breeds = []
@@ -132,7 +132,6 @@ class Flower:
                     if c_index not in pool:
                         new_breeds.append((pp, c_index, sorted_parents))
         new_breeds.sort(reverse=True)        
-        new_definite_breeds = {} # breeds with 100%, so only one needed
         
         n_cross_slots = [(None, None)] * len(i_cross_slots)
         n_clone_slots = [(None, None)] * len(i_clone_slots)
@@ -155,15 +154,16 @@ class Flower:
             return False
                         
         # cross slot
+        new_definite_breeds = {} # breeds with 100%, so only one needed
         for new_breed in new_breeds:
             (pp, c_index, parents) = new_breed
             if c_index in new_definite_breeds:
                 continue
-            
+                        
             # match existing cross_breeds
             materialized = False
             for i, cross_slot in enumerate(i_cross_slots):
-                if parents == cross_slot:
+                if parents == cross_slot and n_cross_slots[i][0] is None:
                     if try_take_from_pool(parents):
                         n_cross_slots[i] = (parents, None)
                         materialized = True
@@ -172,7 +172,7 @@ class Flower:
             # find an empty slot
             if not materialized:
                 for i, cross_slot in enumerate(i_cross_slots):
-                    if cross_slot is not None:
+                    if cross_slot is not None or n_cross_slots[i][0] is not None:
                         continue
                     if try_take_from_pool(parents):
                         n_cross_slots[i] = (parents, ('+', parents))
@@ -197,7 +197,7 @@ class Flower:
             for i, clone_slot in enumerate(i_clone_slots):
                 if v <= 0:
                     break
-                if clone_slot == k:
+                if clone_slot == k and n_clone_slots[i][0] is None:
                     if try_take_from_pool_single(k):
                         v -= 1
                         n_clone_slots[i] = (k, None)
@@ -207,7 +207,7 @@ class Flower:
             for i, clone_slot in enumerate(i_clone_slots):
                 if v <= 0:
                     break
-                if clone_slot is None:
+                if clone_slot is None and n_clone_slots[i][0] is None:
                     if try_take_from_pool_single(k):
                         v -= 1
                         n_clone_slots[i] = (k, ('+', k))
@@ -223,14 +223,10 @@ class Flower:
         n_store_slots = [None] * len(i_store_slots)
         for i, (cindex, count) in enumerate(i_store_slots):
             n_store_slots[i] = (cindex, pool[cindex])
-            pool[cindex] = 0
-        for cindex, c in pool.items():
-            if c > 0:
-                n_storage_slots.append((cindex, c))
-        return n_cross_slots, n_clone_slots, n_store_slots
+        return n_cross_slots, n_clone_slots, n_store_slots, store_indicies
     
     def print_breeding_guide(self, cross_slots, clone_slots, storage_slots, target_count = 1):
-        (n_cross_slots, n_clone_slots, n_store_slots) = self.breeding_guide(cross_slots, clone_slots, storage_slots, target_count)
+        (n_cross_slots, n_clone_slots, n_store_slots, store_indicies) = self.breeding_guide(cross_slots, clone_slots, storage_slots, target_count)
         def get_pair_str(nsv):
             return 'E' if nsv is None else '{} x {}'.format(self.get_color_str(nsv[0]), self.get_color_str(nsv[1]))
         
@@ -245,7 +241,8 @@ class Flower:
                 print ("\t{} {}".format(op, get_pair_str(v)))
             if nsv is not None:
                 for (c, p) in self.mate_definite(nsv[0], nsv[1])[0]:
-                    print("\t{} [{}%]".format(self.get_color_str(c), p * 100))
+                    sindex_str = str(store_indicies[c]) if c in store_indicies else 'New'
+                    print("\t{} [{}%] [S: {}]".format(self.get_color_str(c), p * 100, sindex_str))
         print("---------------------")                   
         print("Clone slots:")
         print("---------------------")
@@ -254,13 +251,9 @@ class Flower:
             if delta is not None:
                 (op, v) = delta
                 print ("\t{} {}".format(op, self.get_color_str(v)))
-        print( n_store_slots)
-        return
-        for gtype in l:
-            cindex = self.get_index(gtype)
-            print("{}: {}".format(pool[cindex], self.get_g_color_str(cindex)))
-        print("-----")
-        for entry in data:
-            (cindex, (p1, p2), pp) = entry
-            print("{}: {}: {}[{}] x {}[{}] [{}%]".format(self.get_g_color_str(cindex), self.name, self.get_g_color_str(p1), pool[p1], self.get_g_color_str(p2), pool[p2], pp * 100))
+        print("---------------------")                   
+        print("Storage slots:")
+        print("---------------------")
+        for (nsv, count) in n_store_slots:
+            print("{}: {} x {}".format(store_indicies[nsv], self.get_color_str(nsv), count))
     
