@@ -188,7 +188,7 @@ class Flower:
             if oslot is None:
                 continue
             nslot = n_cross_slots[i]
-            if nslot is None:
+            if nslot[0] is None:
                 n_cross_slots[i] = (None, ('-', oslot))
         
         # clone slot
@@ -217,7 +217,7 @@ class Flower:
             if oslot is None:
                 continue
             nslot = n_clone_slots[i]
-            if nslot is None:
+            if nslot[0] is None:
                 n_clone_slots[i] = (None, ('-', oslot))
         
         n_store_slots = [None] * len(i_store_slots)
@@ -228,7 +228,7 @@ class Flower:
     def print_breeding_guide(self, cross_slots, clone_slots, storage_slots, target_count = 1):
         (n_cross_slots, n_clone_slots, n_store_slots, store_indicies) = self.breeding_guide(cross_slots, clone_slots, storage_slots, target_count)
         def get_pair_str(nsv):
-            return 'E' if nsv is None else '{} x {}'.format(self.get_color_str(nsv[0]), self.get_color_str(nsv[1]))
+            return 'E' if nsv is None else '{}[{}] x {}[{}]'.format(self.get_color_str(nsv[0]), store_indicies[nsv[0]], self.get_color_str(nsv[1]), store_indicies[nsv[1]])
         
         print(self.name)
         print("=====================")
@@ -247,7 +247,10 @@ class Flower:
         print("Clone slots:")
         print("---------------------")
         for i, (nsv, delta) in enumerate(n_clone_slots):
-            print("{}: {}".format(i+1, 'E' if nsv is None else self.get_color_str(nsv)))
+            s = 'E'
+            if nsv is not None:
+                s = '{} [S: {}]'.format(self.get_color_str(nsv), store_indicies[nsv])
+            print("{}: {}".format(i+1, s))
             if delta is not None:
                 (op, v) = delta
                 print ("\t{} {}".format(op, self.get_color_str(v)))
