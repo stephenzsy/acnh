@@ -236,11 +236,16 @@ class Flower:
         print("---------------------")
         for i, (nsv, delta) in enumerate(n_cross_slots):
             print("{}: {}".format(i+1, get_pair_str(nsv)))
+            v = None
             if delta is not None:
                 (op, v) = delta
                 print ("\t{} {}".format(op, get_pair_str(v)))
             if nsv is not None:
                 for (c, p) in self.mate_definite(nsv[0], nsv[1])[0]:
+                    sindex_str = str(store_indicies[c]) if c in store_indicies else 'New'
+                    print("\t{} [{}%] [S: {}]".format(self.get_color_str(c), p * 100, sindex_str))
+            elif v is not None:
+                for (c, p) in self.mate_definite(v[0], v[1])[0]:
                     sindex_str = str(store_indicies[c]) if c in store_indicies else 'New'
                     print("\t{} [{}%] [S: {}]".format(self.get_color_str(c), p * 100, sindex_str))
         print("---------------------")                   
