@@ -262,6 +262,6 @@ class Flower:
             d = count - o_count
             diff_str = ""
             if d != 0:
-                diff_str = "({}{})".format("+" if d > 0 else "-", d)
+                diff_str = "({}{})".format("+" if d > 0 else "", d)
             print("{}: {} x {} {}".format(store_indicies[nsv], self.get_color_str(nsv), count, diff_str))
     
