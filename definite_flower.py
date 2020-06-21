@@ -225,8 +225,8 @@ class Flower:
             n_store_slots[i] = (cindex, pool[cindex])
         return n_cross_slots, n_clone_slots, n_store_slots, store_indicies
     
-    def print_breeding_guide(self, cross_slots, clone_slots, storage_slots, target_count = 1):
-        (n_cross_slots, n_clone_slots, n_store_slots, store_indicies) = self.breeding_guide(cross_slots, clone_slots, storage_slots, target_count)
+    def print_breeding_guide(self, cross_slots, clone_slots, store_slots, target_count = 1):
+        (n_cross_slots, n_clone_slots, n_store_slots, store_indicies) = self.breeding_guide(cross_slots, clone_slots, store_slots, target_count)
         def get_pair_str(nsv):
             return 'E' if nsv is None else '{}[{}] x {}[{}]'.format(self.get_color_str(nsv[0]), store_indicies[nsv[0]], self.get_color_str(nsv[1]), store_indicies[nsv[1]])
         
@@ -257,6 +257,11 @@ class Flower:
         print("---------------------")                   
         print("Storage slots:")
         print("---------------------")
-        for (nsv, count) in n_store_slots:
-            print("{}: {} x {}".format(store_indicies[nsv], self.get_color_str(nsv), count))
+        for i, (nsv, count) in enumerate( n_store_slots):
+            o_count = store_slots[i][2]
+            d = count - o_count
+            diff_str = ""
+            if d != 0:
+                diff_str = "({}{})".format("+" if d > 0 else "-", d)
+            print("{}: {} x {} {}".format(store_indicies[nsv], self.get_color_str(nsv), count, diff_str))
     
