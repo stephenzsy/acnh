@@ -270,3 +270,9 @@ class Flower:
                 diff_str = "({}{})".format("+" if d > 0 else "", d)
             print("{}: {} x {} {}".format(store_indicies[nsv], self.get_color_str(nsv), count, diff_str))
     
+    def print_final_seq(self, store_slots):
+        store_slots.sort(key=lambda a: a[1])
+        
+        for i, s in enumerate(store_slots):
+            cindex = self.get_index(s[1])
+            print("{}: {} [Seq:{}] [BS:{}]".format(i + 1, self.get_color_str(cindex), cindex, s[0]))
